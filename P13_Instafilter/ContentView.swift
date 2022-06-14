@@ -9,25 +9,20 @@ import SwiftUI
 
 struct ContentView: View {
 	
-	@State private var showingConfirmation = false
-	@State private var backgroundColor = Color.white
+	@State private var image: Image?
 	
     var body: some View {
-		 Text("Hello, world!")
-			 .frame(width: 300, height: 300)
-			 .background(backgroundColor)
-			 .onTapGesture {
-				 showingConfirmation = true
-			 }
-			 .confirmationDialog("Change background", isPresented: $showingConfirmation) {
-				 Button("Red") {backgroundColor = .red }
-				 Button("Green") {backgroundColor = .green }
-				 Button("Blue") {backgroundColor = .blue }
-				 Button("Cancel", role: .cancel) {}
-			 } message: {
-				 Text("Select a new color")
-			 }
+		 VStack{
+			 image?
+				 .resizable()
+				 .scaledToFit()
+		 }
+		 .onAppear(perform: loadImage)
     }
+	
+	func loadImage(){
+		image = Image("Example")
+	}
 }
 
 struct ContentView_Previews: PreviewProvider {
