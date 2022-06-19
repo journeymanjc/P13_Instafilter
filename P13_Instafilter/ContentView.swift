@@ -23,6 +23,12 @@ struct ContentView: View {
 			Button("Select Image"){
 				showingImagePicker = true
 			}
+			Button("Save Image") {
+				guard let inputImage = inputImage else { return }
+				
+				let imageSaver = ImageSaver()
+				imageSaver.writeToPhotoAlbum(image: inputImage)
+			}
 		}
 		.sheet(isPresented: $showingImagePicker) {
 			ImagePicker(image: $inputImage)
@@ -37,6 +43,11 @@ struct ContentView: View {
 			return
 		}
 		image = Image(uiImage: inputImage)
+		//first param is the image to save.
+		//Second param is the object that should be notified about the result of the save.
+		//Thirs param method on the object that should be run.
+		//Fourth param is data that will be passed back to us when the completion method is called.
+		UIImageWriteToSavedPhotosAlbum(inputImage, nil, nil, nil)
 	}
    
 }
