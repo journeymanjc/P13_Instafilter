@@ -12,44 +12,88 @@ import CoreImage.CIFilterBuiltins
 struct ContentView: View {
 	
 	@State private var image: Image?
+	@State private var filterIntensity: Double = 0.5
+	
 	@State private var showingImagePicker = false
 	@State private var inputImage: UIImage?
+	
+	@State private var currentFilter = CIFilter.sepiaTone()
+	let context = CIContext()
+	
+	@State private var showingFilterSheet = false
+	
 	var body: some View{
-		VStack{
-			image?
-				.resizable()
-				.scaledToFit()
-			
-			Button("Select Image"){
-				showingImagePicker = true
-			}
-			Button("Save Image") {
-				guard let inputImage = inputImage else { return }
+		NavigationView{
+			VStack{
+				ZStack{
+					Rectangle()
+						.fill(.secondary)
+					Text("Tap to select a picture")
+						.foregroundColor(.white)
+						.font(.headline)
+					
+					image?
+						.resizable()
+						.scaledToFit()
+				}
+				.onTapGesture {
+					showingImagePicker = true
+				}
 				
-				let imageSaver = ImageSaver()
-				imageSaver.writeToPhotoAlbum(image: inputImage)
+				HStack{
+					Text("Intensity")
+					Slider(value: $filterIntensity)
+						.onChange(of: filterIntensity) { _ in
+							applyProcessing()
+						}
+				}
+				.padding()
+				
+				HStack{
+					Button("Change Filter") {
+						//Change filter
+						showingFilterSheet = true
+					}
+					
+					Spacer()
+					Button("Save", action: save)
+				}
 			}
+			.navigationTitle("Instafilter")
 		}
+		.padding([.horizontal, .bottom])
+		
+		.onChange(of: inputImage) { _ in loadImage()  }
 		.sheet(isPresented: $showingImagePicker) {
 			ImagePicker(image: $inputImage)
 		}
-		.onChange(of: inputImage) { _ in
-			loadImage()
+		.confirmationDialog("Select a filter", isPresented: $showingFilterSheet) {
+			// dialog here
 		}
 	}
 	
-	func loadImage() {
+	func save(){
+		
+	}
+	
+	func applyProcessing(){
+		currentFilter.intensity = Float(filterIntensity)
+		guard let outputImage = currentFilter.outputImage else { return }
+		
+		if let cgimg = context.createCGImage(outputImage, from: outputImage.extent){
+			let uiImage = UIImage(cgImage: cgimg)
+			image = Image(uiImage: uiImage)
+		}
+	}
+	
+	func loadImage(){
 		guard let inputImage = inputImage else {
 			return
 		}
-		image = Image(uiImage: inputImage)
-		//first param is the image to save.
-		//Second param is the object that should be notified about the result of the save.
-		//Thirs param method on the object that should be run.
-		//Fourth param is data that will be passed back to us when the completion method is called.
-		UIImageWriteToSavedPhotosAlbum(inputImage, nil, nil, nil)
+		let beginImage =  CIImage(image: inputImage)
+		currentFilter.setValue(beginImage, forKey: kCIInputImageKey)
+		applyProcessing()
 	}
-   
 }
 
 struct ContentView_Previews: PreviewProvider {
