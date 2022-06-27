@@ -13,6 +13,8 @@ struct ContentView: View {
 	
 	@State private var image: Image?
 	@State private var filterIntensity: Double = 0.5
+	@State private var radiusIntensity: Double = 0.5
+	@State private var scaleIntensity: Double = 0.5
 	
 	@State private var showingImagePicker = false
 	@State private var enableSave = false
@@ -52,8 +54,17 @@ struct ContentView: View {
 				.padding()
 				HStack{
 					Text("Radius")
-					Slider(value: $filterIntensity)
-						.onChange(of: filterIntensity) { _ in
+					Slider(value: $radiusIntensity)
+						.onChange(of: radiusIntensity) { _ in
+							applyProcessing()
+						}
+				}
+				.padding()
+				
+				HStack{
+					Text("Scale")
+					Slider(value: $scaleIntensity)
+						.onChange(of: scaleIntensity) { _ in
 							applyProcessing()
 						}
 				}
@@ -80,13 +91,22 @@ struct ContentView: View {
 		}
 		.confirmationDialog("Select a filter", isPresented: $showingFilterSheet) {
 			// dialog here
-			Button("Crystalize") { setFilter(CIFilter.crystallize())}
-			Button("Edges") { setFilter(CIFilter.edges())}
-			Button("Gaussian Blur") { setFilter(CIFilter.gaussianBlur())}
-			Button("Pixellate") { setFilter(CIFilter.pixellate())}
-			Button("Sepia Tone") { setFilter(CIFilter.sepiaTone())}
-			Button("Unsharp Mask") { setFilter(CIFilter.unsharpMask())}
-			Button("Vignette") { setFilter(CIFilter.vignette())}
+			Group{
+				Button("Crystalize") { setFilter(CIFilter.crystallize())}
+				Button("Edges") { setFilter(CIFilter.edges())}
+				Button("Gaussian Blur") { setFilter(CIFilter.gaussianBlur())}
+				Button("Pixellate") { setFilter(CIFilter.pixellate())}
+				Button("Sepia Tone") { setFilter(CIFilter.sepiaTone())}
+				Button("Unsharp Mask") { setFilter(CIFilter.unsharpMask())}
+				Button("Vignette") { setFilter(CIFilter.vignette())}
+				Button("Color Invert") {setFilter(CIFilter.colorInvert())}
+			}
+			Group{
+				Button("Bloom") {setFilter(CIFilter.bloom())}
+				Button("Dot Screen") {setFilter(CIFilter.dotScreen())}
+			}
+			
+			
 			Button("Cancel", role: .cancel) { }
 			
 			//CIFilter.
@@ -111,10 +131,10 @@ struct ContentView: View {
 			currentFilter.setValue(filterIntensity, forKey: kCIInputIntensityKey)
 		}
 		if inputKeys.contains(kCIInputRadiusKey) {
-			currentFilter.setValue(filterIntensity * 200, forKey: kCIInputRadiusKey)
+			currentFilter.setValue(radiusIntensity * 200, forKey: kCIInputRadiusKey)
 		}
 		if inputKeys.contains(kCIInputScaleKey) {
-			currentFilter.setValue(filterIntensity * 10, forKey: kCIInputScaleKey)
+			currentFilter.setValue(scaleIntensity * 10, forKey: kCIInputScaleKey)
 		}
 		
 		guard let outputImage = currentFilter.outputImage else { return }
